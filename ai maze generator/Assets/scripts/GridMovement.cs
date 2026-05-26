@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using TMPro;
 public class GridMovement : MonoBehaviour
 {
     public float moveDistance = 1f;
@@ -10,10 +11,14 @@ public class GridMovement : MonoBehaviour
     private Vector3 targetPosition;
     private int hits = 0;
     private int maxHits = 3;
+    private int lives = 3;
+    private int maxLives = 3;
 
     private Vector3 startPosition;
 
     private ScreenFlash screenFlash;
+    public TextMeshProUGUI healthText;
+    public TextMeshProUGUI livesText;
 
     void Start()
     {
@@ -21,6 +26,16 @@ public class GridMovement : MonoBehaviour
         startPosition = transform.position;
 
         screenFlash = FindObjectOfType<ScreenFlash>();
+        UpdateHealthUI();
+        UpdateLivesUI();
+    }
+    void UpdateHealthUI()
+    {
+        healthText.text = "Health: " + (maxHits - hits);
+    }
+    void UpdateLivesUI()
+    {
+        livesText.text = "Lives: " + lives;
     }
 
     void Update()
@@ -62,18 +77,43 @@ public class GridMovement : MonoBehaviour
                         StartCoroutine(screenFlash.Flash());
                     }
                     hits++;
-                    
+                    UpdateHealthUI();
+
                     Debug.Log("Hit wall! Lives left: " + (maxHits - hits));
 
                     // Reset after 3 hits
                     if (hits >= maxHits)
                     {
-                        Debug.Log("Too many hits! Resetting player.");
+                        lives--;
+
+                        UpdateLivesUI();
+
+                        Debug.Log("Lost a life!");
 
                         transform.position = startPosition;
                         targetPosition = startPosition;
 
                         hits = 0;
+
+                        UpdateHealthUI();
+
+                        // Game Over
+                        if (lives <= 0)
+                        {
+                            Debug.Log("GAME OVER");
+
+                            lives = maxLives;
+
+                            UpdateLivesUI();
+
+                            MazeGenerator maze = FindObjectOfType<MazeGenerator>();
+
+                            maze.width = 17;
+                            maze.height = 17;
+                            maze.level = 1;
+
+                            maze.GenerateMaze();
+                        }
                     }
                 }
             }
