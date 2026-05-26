@@ -1,10 +1,12 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class MazeGenerator : MonoBehaviour
 {
-    public int width = 21;
-    public int height = 21;
+    public int width = 17;
+    public int height = 17;
+    public int level = 1;
 
     public GameObject wallPrefab;
     public GameObject floorPrefab;
@@ -14,10 +16,10 @@ public class MazeGenerator : MonoBehaviour
 
     void Start()
     {
-        GenerateNewMaze();
+        GenerateMaze();
     }
 
-    public void GenerateNewMaze()
+    public void GenerateMaze()
     {
         // Delete old maze
         foreach (Transform child in transform)
@@ -37,15 +39,30 @@ public class MazeGenerator : MonoBehaviour
         }
 
         GeneratePath(1, 1);
-
+            
         // Create entrance and exit
-        maze[1, 0] = 0;
-        maze[width - 2, height - 1] = 0;
+        // Entrance (top left outside)
+        maze[0, 1] = 0;
+
+        // Exit (bottom right outside)
+        maze[width - 1, height - 2] = 0;
 
         DrawMaze();
 
         // Move player to start
-        player.transform.position = new Vector3(1, 1, -1);
+        Vector3 startPos = new Vector3(0, 1, -1);
+
+        player.transform.position = startPos;
+
+        GridMovement movement = player.GetComponent<GridMovement>();
+
+        if (movement != null)
+        {
+            movement.SetStartPosition(startPos);
+        }
+        Camera.main.transform.position = new Vector3(width / 2f, height / 2f, -10);
+
+        Camera.main.orthographicSize = Mathf.Max(width, height) / 2f;
     }
 
     void GeneratePath(int x, int y)
@@ -108,7 +125,16 @@ public class MazeGenerator : MonoBehaviour
 
     public bool IsGoal(Vector3 playerPos)
     {
-        return Mathf.RoundToInt(playerPos.x) == width - 2 &&
-               Mathf.RoundToInt(playerPos.y) == height - 1;
+        return Mathf.RoundToInt(playerPos.x) == width - 1 &&
+               Mathf.RoundToInt(playerPos.y) == height - 2;
+    }
+    public void NextLevel()
+    {
+        width = Mathf.Min(width + 2, 51);
+        height = Mathf.Min(height + 2, 51);
+
+        level++;
+
+        GenerateMaze();
     }
 }
