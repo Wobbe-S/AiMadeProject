@@ -144,6 +144,8 @@ public class GridMovement : MonoBehaviour
             }
 
         }
+        if (Time.timeScale == 0f)
+            return;
     }
     public void SetStartPosition(Vector3 newStart)
 {
