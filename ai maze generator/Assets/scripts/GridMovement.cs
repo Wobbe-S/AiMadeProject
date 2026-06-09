@@ -13,6 +13,7 @@ public class GridMovement : MonoBehaviour
     private int maxHits = 3;
     private int lives = 3;
     private int maxLives = 3;
+    private MazeGenerator maze;
 
     private Vector3 startPosition;
 
@@ -25,9 +26,10 @@ public class GridMovement : MonoBehaviour
         targetPosition = transform.position;
         startPosition = transform.position;
 
-        screenFlash = FindObjectOfType<ScreenFlash>();
+        screenFlash = FindFirstObjectByType<ScreenFlash>();
         UpdateHealthUI();
         UpdateLivesUI();
+        maze = FindFirstObjectByType<MazeGenerator>();
     }
     void UpdateHealthUI()
     {
@@ -40,6 +42,8 @@ public class GridMovement : MonoBehaviour
 
     void Update()
     {
+        if (Time.timeScale == 0f)
+            return;
         if (!isMoving)
         {
             Vector3 moveDirection = Vector3.zero;
@@ -60,6 +64,15 @@ public class GridMovement : MonoBehaviour
             {
                 Vector3 newPosition = transform.position + moveDirection * moveDistance;
 
+                // Prevent leaving the maze area
+
+                if (newPosition.x < 0 ||
+                    newPosition.x >= maze.width ||
+                    newPosition.y < 0 ||
+                    newPosition.y >= maze.height)
+                {
+                    return;
+                }
                 // Detect walls
                 Collider2D hit = Physics2D.OverlapCircle(newPosition, 0.2f);
 
@@ -106,7 +119,7 @@ public class GridMovement : MonoBehaviour
 
                             UpdateLivesUI();
 
-                            MazeGenerator maze = FindObjectOfType<MazeGenerator>();
+                            MazeGenerator maze = FindFirstObjectByType<MazeGenerator>();
 
                             maze.width = 17;
                             maze.height = 17;
@@ -133,7 +146,7 @@ public class GridMovement : MonoBehaviour
                 isMoving = false;
 
                 // Find the maze generator
-                MazeGenerator maze = FindObjectOfType<MazeGenerator>();
+                MazeGenerator maze = FindAnyObjectByType<MazeGenerator>();
 
                 // Check if player reached the exit
                 if (maze.IsGoal(transform.position))
@@ -144,8 +157,6 @@ public class GridMovement : MonoBehaviour
             }
 
         }
-        if (Time.timeScale == 0f)
-            return;
     }
     public void SetStartPosition(Vector3 newStart)
 {

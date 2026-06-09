@@ -12,6 +12,7 @@ public class MazeGenerator : MonoBehaviour
     public GameObject floorPrefab;
     public GameObject player;
 
+    private Color wallColor;
     private int[,] maze;
 
     void Start()
@@ -21,6 +22,19 @@ public class MazeGenerator : MonoBehaviour
 
     public void GenerateMaze()
     {
+        //random wall color
+        Color[] colors =
+        {
+            Color.red,
+            Color.blue,
+            Color.green,
+            Color.yellow,
+            Color.magenta,
+            Color.cyan
+        };
+
+        wallColor = colors[Random.Range(0, colors.Length)];
+        Debug.Log("Generating maze...");
         // Delete old maze
         foreach (Transform child in transform)
         {
@@ -107,18 +121,37 @@ public class MazeGenerator : MonoBehaviour
 
     void DrawMaze()
     {
+        if (floorPrefab == null)
+        {
+            Debug.LogError("Floor Prefab is NULL!");
+        }
+
+        if (wallPrefab == null)
+        {
+            Debug.LogError("Wall Prefab is NULL!");
+        }
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
                 GameObject prefab = maze[x, y] == 1 ? wallPrefab : floorPrefab;
 
-                Instantiate(
+                GameObject tile = Instantiate(
                     prefab,
                     new Vector3(x, y, 0),
                     Quaternion.identity,
                     transform
                 );
+
+                if (maze[x, y] == 1)
+                {
+                    SpriteRenderer sr = tile.GetComponent<SpriteRenderer>();
+
+                    if (sr != null)
+                    {
+                        sr.color = wallColor;
+                    }
+                }
             }
         }
     }
@@ -130,11 +163,28 @@ public class MazeGenerator : MonoBehaviour
     }
     public void NextLevel()
     {
-        width = Mathf.Min(width + 2, 51);
-        height = Mathf.Min(height + 2, 51);
+        width = Mathf.Min(width + 2, 37);
+        height = Mathf.Min(height + 2, 37);
 
         level++;
 
         GenerateMaze();
+    }
+    public bool IsWalkable(int x, int y)
+    {
+        // Entrance
+        if (x == 0 && y == 1)
+            return true;
+
+        // Exit
+        if (x == width - 1 && y == height - 2)
+            return true;
+
+        // Border walls
+        if (x == 0 || x == width - 1 ||
+            y == 0 || y == height - 1)
+            return false;
+
+        return maze[x, y] == 0;
     }
 }
