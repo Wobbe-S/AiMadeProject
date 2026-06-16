@@ -7,6 +7,7 @@ public class MazeGenerator : MonoBehaviour
     public int width = 17;
     public int height = 17;
     public int level = 1;
+    public int maxMazeSize = 37;
 
     public GameObject wallPrefab;
     public GameObject floorPrefab;
@@ -163,8 +164,21 @@ public class MazeGenerator : MonoBehaviour
     }
     public void NextLevel()
     {
-        width = Mathf.Min(width + 2, 37);
-        height = Mathf.Min(height + 2, 37);
+        if (width >= maxMazeSize && height >= maxMazeSize)
+        {
+            WinScreenManager win =
+                FindFirstObjectByType<WinScreenManager>();
+
+            if (win != null)
+            {
+                win.ShowWinScreen();
+            }
+
+            return;
+        }
+
+        width = Mathf.Min(width + 2, maxMazeSize);
+        height = Mathf.Min(height + 2, maxMazeSize);
 
         level++;
 
